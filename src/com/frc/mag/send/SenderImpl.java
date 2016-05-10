@@ -54,7 +54,7 @@ public class SenderImpl {
 		int i, j, k = 0, n = auList.size();
 		int MAXN = 40;	//一次处理MAXN个AuId
 		List<QueryThread> threadList = new ArrayList<QueryThread>();
-		for (i = 0, k = 0; k < n && i < n / MAXN; i++) {
+		for (i = 0, k = 0; k < n && i <= n / MAXN; i++) {
 			String cond = "";
 			cond = String.format("Composite(AA.AuId=%s)", auList.get(k));
 			k++;

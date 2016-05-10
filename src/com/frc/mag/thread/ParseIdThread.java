@@ -74,14 +74,14 @@ public class ParseIdThread extends Thread {
 		if (object.containsKey("C")) {
 			Map C = (Map) object.get("C");
 			if (C != null) {
-				long cid = toMyLong(object.get("CId"));
+				long cid = toMyLong(C.get("CId"));
 				insert(cid, IConstants.SHORT_CID);
 			}
 		}
 		if (object.containsKey("J")) {
 			Map J = (Map) object.get("J");
 			if (J != null) {
-				long jid = toMyLong(object.get("JId"));
+				long jid = toMyLong(J.get("JId"));
 				insert(jid, IConstants.SHORT_JID);
 			}
 		}
@@ -99,7 +99,12 @@ public class ParseIdThread extends Thread {
 			return (long) obj;
 		} else if (obj instanceof Integer) {
 			return (long) (int) obj;
+		} else if (obj instanceof String) {
+			return Long.parseLong((String)obj);
+		} else {
+			log.error("Unknow type!" + obj);
+			return 0;
 		}
-		return 0;
+		
 	}
 }
