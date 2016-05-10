@@ -24,8 +24,10 @@ import org.slf4j.LoggerFactory;
 import com.alibaba.fastjson.JSON;
 import com.frc.mag.bean.BigDataNode;
 import com.frc.mag.bean.DataNode;
+import com.frc.mag.send.BaseSender;
 import com.frc.mag.send.SenderImpl;
 import com.frc.mag.thread.ParseIdThread;
+import com.frc.mag.thread.ParseRIdThread;
 import com.frc.mag.thread.QueryThread;
 import com.frc.util.IOUtil;
 
@@ -176,7 +178,8 @@ public class Processor extends Thread {
 			parseJsonObject(obj);
 		} else {
 			String expr = String.format("Or(Id=%d,Composite(AA.AuId=%d))", id, id);
-			Map obj = queryData(expr, COMMON_ATTR, IConstants.MAX_COUNT);
+			Map obj = BaseSender.queryData(expr, COMMON_ATTR, IConstants.MAX_COUNT, "0");
+//			Map obj = queryData(expr, COMMON_ATTR, IConstants.MAX_COUNT);
 			parseJsonObject(obj);
 		}
 
@@ -212,29 +215,11 @@ public class Processor extends Thread {
 
 		// Inser Id--Rid-->Id
 		// Level 1 : Id
-		begin = System.currentTimeMillis();
-		List ridArr = (List) paper.get("RId");
-		if (ridArr == null || ridArr.size() == 0) {
-			return;
-		}
-		
-		String cond = "";
-		cond = "RId=" + ridArr.get(0);
-		for (int i = 1; i < ridArr.size() && i < 70; i++) {
-			String str = String.format("Or(%s,RId=%s)", cond, ridArr.get(i));
-			cond = str;
-		}
-		log.info("String.length:" + cond.length());
-		log.info("size=" + ridArr.size() + ",cond=" + cond);
-
-		begin = System.currentTimeMillis();
-		QueryThread t1 = new QueryThread(cond, COMMON_ATTR, IConstants.MAX_COUNT, "0");
-		t1.start();
-
-		
+		ParseRIdThread parseRIdThread = new ParseRIdThread(paper);
+		parseRIdThread.start();
 
 		try {
-			t1.join();
+			parseRIdThread.join();
 			parseIdThread.join();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -242,7 +227,7 @@ public class Processor extends Thread {
 		}
 
 		// Map result = queryData(cond, COMMON_ATTR, IConstants.MAX_COUNT);
-		Map result = t1.getResult();
+		Map result = parseRIdThread.result;
 		Map result2 = parseIdThread.result;
 
 		printTime(begin, "Parse Id(L1)");
@@ -418,7 +403,7 @@ public class Processor extends Thread {
 		insert(jid, IConstants.SHORT_JID);
 	}
 
-	public static Map queryData(String expr, String attributes, String count) {
+	public static Map queryData11(String expr, String attributes, String count) {
 		long s = System.currentTimeMillis();
 
 		String ttl = "evaluate";

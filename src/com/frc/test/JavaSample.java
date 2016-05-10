@@ -20,6 +20,7 @@ import org.testng.annotations.Test;
 import com.alibaba.fastjson.JSON;
 import com.frc.mag.parse.IConstants;
 import com.frc.mag.parse.Processor;
+import com.frc.mag.send.BaseSender;
 import com.frc.mag.thread.QueryThread;
 import com.frc.util.IOUtil;
 
@@ -60,7 +61,7 @@ public class JavaSample {
 
 	@Test(dataProvider = "test")
 	public void withoutThread(String ttl, String expr, String attributes) {
-		Map result = Processor.queryData(expr, attributes, IConstants.MAX_COUNT);
+		Map result = BaseSender.queryData(expr, attributes, IConstants.MAX_COUNT, "0");
 		long l = System.currentTimeMillis();
 		String fileName = String.format("%s\\data_%s_%d.json", PATH, ttl, l % MOD);
 		System.out.println("Writing to file: " + fileName);

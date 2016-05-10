@@ -70,10 +70,6 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		long s1 = System.currentTimeMillis();
 		finalHandle();
 		printTime(s1, "Process use time");
-		long queryTime = p1.ttl_query_use_time + p2.ttl_query_use_time;
-		log.info("p1 query use:" + p1.ttl_query_use_time);
-		log.info("p2 query use:" + p2.ttl_query_use_time);
-		log.info("Total query use time:" + queryTime);
 		printTime(s, "Total use time");
 		
 		String rs = JSON.toJSONString(result);
@@ -105,9 +101,7 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		finalHandle();
 		printTime(s1, "Process use time");
 		long queryTime = p1.ttl_query_use_time + p2.ttl_query_use_time;
-		log.info("p1 query use:" + p1.ttl_query_use_time);
-		log.info("p2 query use:" + p2.ttl_query_use_time);
-		log.info("Total query use time:" + queryTime);
+
 		printTime(s, "Total use time");
 	}
 
@@ -120,7 +114,7 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		if (result.size() < 2000) {
 			String str = JSONObject.toJSONString(result);
 			long l = System.currentTimeMillis();
-			String path = String.format("%s\\Result_%d.json", IConstants.TESTPATH, l % 10000000);
+			String path = String.format("%s/Result_%d.json", IConstants.TESTPATH, l % 10000000);
 			IOUtil.writeStringToFile(path, str);
 		}
 		

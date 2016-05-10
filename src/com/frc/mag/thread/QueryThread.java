@@ -27,6 +27,7 @@ public class QueryThread extends Thread {
 	
 	@Override
 	public void run() {
+		long s = System.currentTimeMillis();
 		int retry = 0;
 		while (retry < IConstants.RETRY_TIME) {
 			retry++;
@@ -36,6 +37,9 @@ public class QueryThread extends Thread {
 			}
 			log.error("result is null or contains error:" + result);
 		}
+		long e = System.currentTimeMillis();
+		String msg = String.format("[QueryThread use %d ms][%s][count=%s][offset=%s]", (e-s), cond, count, offset);
+		log.info(msg);
 	}
 
 	public Map getResult() {
