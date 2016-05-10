@@ -1,10 +1,11 @@
-package com.frc.mag.parse;
+package com.frc.mag.thread;
 
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.frc.mag.parse.IConstants;
 import com.frc.mag.send.BaseSender;
 
 public class QueryThread extends Thread {

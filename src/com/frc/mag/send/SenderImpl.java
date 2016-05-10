@@ -7,13 +7,13 @@ import java.util.Map;
 
 import com.frc.mag.bean.DataNode;
 import com.frc.mag.parse.IConstants;
-import com.frc.mag.parse.QueryThread;
+import com.frc.mag.thread.QueryThread;
 
 public class SenderImpl {
 	//get list of Id from list of RId
 	public Map getIdList(List<String> ridArr) {
 		int i, j, k = 0, n = ridArr.size();
-		int MAXN = 40;	//一次处理MAXN个RId
+		int MAXN = 40;	//涓�娆″鐞哅AXN涓猂Id
 		List<QueryThread> threadList = new ArrayList<QueryThread>();
 		for (i = 0, k = 0; k < n && i < n / MAXN; i++) {
 			String cond = "";
@@ -52,7 +52,7 @@ public class SenderImpl {
 	
 	public Map getAfIdList(List<String> auList) {
 		int i, j, k = 0, n = auList.size();
-		int MAXN = 40;	//一次处理MAXN个AuId
+		int MAXN = 40;	//涓�娆″鐞哅AXN涓狝uId
 		List<QueryThread> threadList = new ArrayList<QueryThread>();
 		for (i = 0, k = 0; k < n && i < n / MAXN; i++) {
 			String cond = "";

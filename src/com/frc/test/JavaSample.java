@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 import com.alibaba.fastjson.JSON;
 import com.frc.mag.parse.IConstants;
 import com.frc.mag.parse.Processor;
-import com.frc.mag.parse.QueryThread;
+import com.frc.mag.thread.QueryThread;
 import com.frc.util.IOUtil;
 
 public class JavaSample {

@@ -25,6 +25,8 @@ import com.alibaba.fastjson.JSON;
 import com.frc.mag.bean.BigDataNode;
 import com.frc.mag.bean.DataNode;
 import com.frc.mag.send.SenderImpl;
+import com.frc.mag.thread.ParseIdThread;
+import com.frc.mag.thread.QueryThread;
 import com.frc.util.IOUtil;
 
 @SuppressWarnings("rawtypes")
@@ -204,7 +206,9 @@ public class Processor extends Thread {
 		long begin = System.currentTimeMillis();
 		// Insert Id->FId,CId,JId,AuId
 		// Level 1: other
-		parsePaperObject(paper);
+//		parsePaperObject(paper);
+		ParseIdThread parseIdThread = new ParseIdThread(paper, otherData1);
+		parseIdThread.start();
 
 		// Inser Id--Rid-->Id
 		// Level 1 : Id
@@ -227,28 +231,11 @@ public class Processor extends Thread {
 		QueryThread t1 = new QueryThread(cond, COMMON_ATTR, IConstants.MAX_COUNT, "0");
 		t1.start();
 
-		// Level 2, Id->Au->Af
-		cond = "";
-		for (int i = 0; i < otherData1.size() && i < 70; i++) {
-			DataNode node = otherData1.get(i);
-			if (node.type != IConstants.SHORT_AUID) {
-				continue;
-			}
-			if (cond.length() == 0) {
-				cond = String.format("Composite(AA.AuId=%d)", node.val);
-			} else {
-				cond = String.format("Or(%s,Composite(AA.AuId=%d))", cond, node.val);
-			}
-		}
-		log.info("String.length:" + cond.length());
-		log.info("otherData1=" + otherData1.size() + ",cond=" + cond);
 		
-		QueryThread t2 = new QueryThread(cond, COMMON_ATTR, IConstants.MAX_COUNT, "0");
-		t2.start();
 
 		try {
 			t1.join();
-			t2.join();
+			parseIdThread.join();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -256,7 +243,7 @@ public class Processor extends Thread {
 
 		// Map result = queryData(cond, COMMON_ATTR, IConstants.MAX_COUNT);
 		Map result = t1.getResult();
-		Map result2 = t2.getResult();
+		Map result2 = parseIdThread.result;
 
 		printTime(begin, "Parse Id(L1)");
 

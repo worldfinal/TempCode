@@ -102,8 +102,8 @@ public class IOUtil {
 		try {
 			String encoding = "UTF-8";
 			File file = new File(filePath);
-			if (file.isFile() && file.exists()) { // ÅĞ¶ÏÎÄ¼şÊÇ·ñ´æÔÚ
-				InputStreamReader read = new InputStreamReader(new FileInputStream(file), encoding);// ¿¼ÂÇµ½±àÂë¸ñÊ½
+			if (file.isFile() && file.exists()) { // åˆ¤æ–­æ–‡ä»¶æ˜¯å¦å­˜åœ¨
+				InputStreamReader read = new InputStreamReader(new FileInputStream(file), encoding);// è€ƒè™‘åˆ°ç¼–ç æ ¼å¼
 				BufferedReader bufferedReader = new BufferedReader(read);
 				String lineTxt = null;
 				while ((lineTxt = bufferedReader.readLine()) != null) {
@@ -111,10 +111,10 @@ public class IOUtil {
 				}
 				read.close();
 			} else {
-				System.out.println("ÕÒ²»µ½Ö¸¶¨µÄÎÄ¼ş");
+				System.out.println("æ‰¾ä¸åˆ°æŒ‡å®šçš„æ–‡ä»¶");
 			}
 		} catch (Exception e) {
-			System.out.println("¶ÁÈ¡ÎÄ¼şÄÚÈİ³ö´í");
+			System.out.println("è¯»å–æ–‡ä»¶å†…å®¹å‡ºé”™");
 			e.printStackTrace();
 		}
 		return fileContent.toString();
