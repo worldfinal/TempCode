@@ -48,7 +48,7 @@ Uri:/mag?id2=2310280492&id1=2332023333
 	}
 	
 	public String work(String id1, String id2) {
-		log.info("[Input Data] id1={},id2={}", id1, id2);
+		log.info("=====================================================\n[Input Data] id1={},id2={}", id1, id2);
 		
 		long s = System.currentTimeMillis();
 		
@@ -56,7 +56,7 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		p1.id = toMyLong(id1);
 		p2.id = toMyLong(id2);
 		
-		FLOW.info("[Input Data] id1={},id2={}", p1.id, p2.id);
+		FLOW.info("=====================================================\n[Input Data] id1={},id2={}", p1.id, p2.id);
 		try {
 			p1.start();
 			p2.start();
@@ -74,7 +74,7 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		
 		String rs = JSON.toJSONString(result);
 		long end = System.currentTimeMillis();
-		FLOW.info("[Result][{} ms]:{}", (end-s), rs);
+		FLOW.info("[Result][{} ms]:{}\n", (end-s), rs);
 		return rs;
 	}
 

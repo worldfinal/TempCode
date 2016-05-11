@@ -30,9 +30,9 @@ public class HttpClient {
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    // 客户端接收到的是httpResponse响应，所以要使用HttpResponseDecoder进行解码
+                    // 瀹㈡埛绔帴鏀跺埌鐨勬槸httpResponse鍝嶅簲锛屾墍浠ヨ浣跨敤HttpResponseDecoder杩涜瑙ｇ爜
                     ch.pipeline().addLast(new HttpResponseDecoder());
-                    // 客户端发送的是httprequest，所以要使用HttpRequestEncoder进行编码
+                    // 瀹㈡埛绔彂閫佺殑鏄痟ttprequest锛屾墍浠ヨ浣跨敤HttpRequestEncoder杩涜缂栫爜
                     ch.pipeline().addLast(new HttpRequestEncoder());
                     ch.pipeline().addLast(new HttpClientInboundHandler());
                 }
@@ -46,11 +46,11 @@ public class HttpClient {
             DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
                     uri.toASCIIString(), Unpooled.wrappedBuffer(msg.getBytes("UTF-8")));
 
-            // 构建http请求
+            // 鏋勫缓http璇锋眰
             request.headers().set(HttpHeaders.Names.HOST, host);
             request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
             request.headers().set(HttpHeaders.Names.CONTENT_LENGTH, request.content().readableBytes());
-            // 发送http请求
+            // 鍙戦�乭ttp璇锋眰
             f.channel().write(request);
             f.channel().flush();
             f.channel().closeFuture().sync();

@@ -28,6 +28,7 @@ public class ParseIdThread extends Thread {
 	@Override
 	public void run() {
 		parsePaperObject(paper);
+		log.info("ParseIdThread:: otherData1.size={}", otherData1.size());
 		
 		List<String> auList = new ArrayList<String>();
 		for (DataNode node : otherData1) {
@@ -45,6 +46,7 @@ public class ParseIdThread extends Thread {
 		}
 		
 		result = thread.result;
+		log.info("ParseIdThread:: (AfId list)result.size={}", result.size());
 	}
 	
 	protected void parsePaperObject(Map object) {

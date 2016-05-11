@@ -30,26 +30,31 @@ public class ParseRIdThread extends Thread {
 			return;
 		}
 		String cond = "";
-		cond = "RId=" + ridArr.get(0);
-		for (int i = 1; i < ridArr.size() && i < 70; i++) {
-			String str = String.format("Or(%s,RId=%s)", cond, ridArr.get(i));
-			cond = str;
-		}
-
+//		cond = "Id=" + ridArr.get(0);
 		List<QueryThread> threadList = new ArrayList<QueryThread>();
-		for (int i = 0; i < 3; i++) {
-			QueryThread thread = new QueryThread(cond, IConstants.COMMON_ATTR, IConstants.MAX_COUNT,
-					String.format("%d", i * IConstants.D_MAX_COUNT));
+		log.info("ParseRIdThread::RidArr.size={}", ridArr.size());
+		
+		int k = 0;
+		for (k = 0; k < ridArr.size();) {
+			cond = "Id=" + ridArr.get(k++);
+			for (int j = 1; j < 50 && k < ridArr.size(); j++) {
+				String str = String.format("Or(%s,Id=%s)", cond, ridArr.get(k));
+				k++;
+				cond = str;	
+			}	
+			QueryThread thread = new QueryThread(cond, IConstants.COMMON_ATTR, IConstants.MAX_COUNT, "0");
 			thread.start();
 			threadList.add(thread);
 			log.debug("ParseRIdThread::sleep 500ms");
 			try {
-				Thread.sleep(500);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		
+	
 		try {
 			for (int i = 0; i < threadList.size(); i++) {
 				QueryThread thread = threadList.get(i);
@@ -60,11 +65,15 @@ public class ParseRIdThread extends Thread {
 			e.printStackTrace();
 		}
 		
+		List entities = new ArrayList();
 		for (int i = 0; i < threadList.size(); i++) {
 			QueryThread thread = threadList.get(i);
 			Map rs = thread.result;
-			result.putAll(rs);
+			List list = (List)rs.get("entities");
+			entities.addAll(list);
+			log.info("ParseRIdThread:: rs size={}", list.size());
 		}
-		
+		result.put("entities", entities);
+		log.info("ParseRIdThread:: total result size={}", entities.size());
 	}
 }
