@@ -27,9 +27,13 @@ import com.frc.mag.bean.BigDataNode;
 import com.frc.mag.bean.DataNode;
 import com.frc.mag.send.BaseSender;
 import com.frc.mag.send.SenderImpl;
+import com.frc.mag.thread.ParseIdList1ForStartPoint;
 import com.frc.mag.thread.ParseIdThread;
-import com.frc.mag.thread.ParseRIdThread;
+import com.frc.mag.thread.ParseOther1Thread;
+import com.frc.mag.thread.ParseOther2Thread;
+import com.frc.mag.thread.ParseRIdThreadForStartPoint;
 import com.frc.mag.thread.QueryThread;
+import com.frc.mag.thread.WFThread;
 import com.frc.util.IOUtil;
 
 @SuppressWarnings("rawtypes")
@@ -48,6 +52,7 @@ public class Processor extends Thread {
 
 	public long id; // It maybe "Id" or "AA.AuId"
 	public int rootType; // 0-Id, 1-AuId
+	public int isStartPoint;// 0-start, 1-end
 
 	// Id->FId,CId,JId,AuId
 	// AuId->AfId
@@ -58,7 +63,8 @@ public class Processor extends Thread {
 
 	// Id->Id
 	// AuId->Id
-	public List<BigDataNode> idList;
+	public List<BigDataNode> idList1;
+	public List<DataNode> idList2;
 
 	public static String PATH = IConstants.TESTPATH;
 	public static long MOD = 100000000;
@@ -66,6 +72,11 @@ public class Processor extends Thread {
 
 	// For testing only
 	public static long ttl_query_use_time;
+	
+	public WFThread other1Thread = null;
+	public WFThread other2Thread = null;
+	public WFThread idList1Thread = null;
+	public WFThread idList2Thread = null;
 
 	public void init() {
 		// listData = new ArrayList<DataNode>();
@@ -75,9 +86,61 @@ public class Processor extends Thread {
 
 		otherData1 = new ArrayList<DataNode>();
 		otherData2 = new ArrayList<DataNode>();
-		idList = new ArrayList<BigDataNode>();
+		idList1 = new ArrayList<BigDataNode>();
+		idList2 = new ArrayList<DataNode>();
 
 		ttl_query_use_time = 0;
+
+	}
+
+	public void parseJsonObject(Map object) {
+		List array = (List) object.get("entities");
+		if (array != null) {
+			log.debug("entities.size=" + array.size());
+			if (array.size() > 1) {
+				FLOW.info("{} is AuId", id);
+				// Level 0 : AuId
+				rootType = 1;
+				other1Thread = new ParseOther1Thread(otherData1, otherData2, idList1, idList2, array, id, rootType, isStartPoint);
+				idList1Thread = new ParseIdList1ForStartPoint(otherData1, otherData2, idList1, idList2, array, id, rootType, isStartPoint);
+			
+				other1Thread.start();
+				idList1Thread.start();
+				
+				try {
+					other1Thread.join();
+					idList1Thread.join();
+				} catch (InterruptedException e) {					
+				}
+				
+//				processAuId(array);
+			} else if (array.size() == 1) {
+				// Level 0 : Id
+				rootType = 0;
+				FLOW.info("{} is PaperId", id);
+				other1Thread = new ParseOther1Thread(otherData1, otherData2, idList1, idList2, array.get(0), id, rootType, isStartPoint);
+				idList1Thread = new ParseIdList1ForStartPoint(otherData1, otherData2, idList1, idList2, array.get(0), id, rootType, isStartPoint);
+				other2Thread = new ParseOther2Thread(otherData1, otherData2, idList1, idList2, array.get(0), id, rootType, isStartPoint);
+				
+				other1Thread.start();
+				idList1Thread.start();
+				
+				try {
+					other1Thread.join();
+					idList1Thread.join();
+				} catch (InterruptedException e) {					
+				}
+				
+				if (isStartPoint == 0) {
+					other2Thread.start();
+					try {
+						other2Thread.join();
+					} catch (InterruptedException e) {
+					}
+				}				
+//				processPaper((Map) array.get(0));
+			}
+		}
 	}
 
 	public void insert(long val, short type) {
@@ -98,29 +161,12 @@ public class Processor extends Thread {
 		}
 	}
 
-	@Before
-	public void before() {
-		init();
-	}
-
-	@After
-	public void after() {
-		log.debug("=== Level 1 =====");
-		log.debug("idList.size:" + idList.size());
-		log.debug("otherData1.size:" + otherData1.size());
-
-		log.debug("=== Level 2 =====");
-		log.debug("otherData2.size:" + otherData2.size());
-
-		log.debug("=== other =====");
-		seeHowManyRid();
-		log.debug("ridMap.size:" + ridMap.size());
-	}
+	
 
 	public void seeHowManyRid() {
 		List<Long> ridList = new ArrayList<Long>();
-		for (int i = 0; i < idList.size(); i++) {
-			BigDataNode bdn = idList.get(i);
+		for (int i = 0; i < idList1.size(); i++) {
+			BigDataNode bdn = idList1.get(i);
 			long val = bdn.val;
 			for (int j = 0; j < bdn.ridList.size(); j++) {
 				long r = bdn.ridList.get(j);
@@ -167,29 +213,14 @@ public class Processor extends Thread {
 			}
 
 		};
-		Collections.sort(idList, c2);
+		Collections.sort(idList1, c2);
 	}
-
-	@Test
-	public void test() {
-		if (IConstants.TEST) {
-			String fileName = IConstants.TESTPATH + "\\data_evaluate_10365512.json";
-			String txt = IOUtil.readTxtFile(fileName);
-			Map obj = JSON.parseObject(txt);
-			parseJsonObject(obj);
-		} else {
-			String expr = String.format("Or(Id=%d,Composite(AA.AuId=%d))", id, id);
-			Map obj = BaseSender.queryData(expr, COMMON_ATTR, IConstants.MAX_COUNT, "0");
-//			Map obj = queryData(expr, COMMON_ATTR, IConstants.MAX_COUNT);
-			parseJsonObject(obj);
-		}
-
-		after();
-	}
-
 	@Override
 	public void run() {
-		test();
+		String expr = String.format("Or(Id=%d,Composite(AA.AuId=%d))", id, id);
+		Map obj = BaseSender.queryData(expr, COMMON_ATTR, IConstants.MAX_COUNT, "0");
+//		Map obj = queryData(expr, COMMON_ATTR, IConstants.MAX_COUNT);
+		parseJsonObject(obj);
 	}
 
 	public void processAuId(List array) {
@@ -202,7 +233,7 @@ public class Processor extends Thread {
 			}
 			// Insert AuId->Id
 			BigDataNode bdn = createBDN(paper);
-			idList.add(bdn);
+			idList1.add(bdn);
 		}
 	}
 
@@ -216,7 +247,7 @@ public class Processor extends Thread {
 
 		// Inser Id--Rid-->Id
 		// Level 1 : Id
-		ParseRIdThread parseRIdThread = new ParseRIdThread(paper);
+		ParseRIdThreadForStartPoint parseRIdThread = new ParseRIdThreadForStartPoint(paper);
 		parseRIdThread.start();
 
 		try {
@@ -254,7 +285,7 @@ public class Processor extends Thread {
 			for (int i = 0; i < array.size(); i++) {
 				Map paper = (Map) array.get(i);
 				BigDataNode bdn = createBDN(paper);
-				idList.add(bdn);
+				idList1.add(bdn);
 
 				long paperId = toMyLong(paper.get("Id"));
 				processLevel2Paper(paper, paperId);
@@ -310,25 +341,6 @@ public class Processor extends Thread {
 		bdn.ridList = list;
 		return bdn;
 	}
-
-	public void parseJsonObject(Map object) {
-		List array = (List) object.get("entities");
-		if (array != null) {
-			log.debug("entities.size=" + array.size());
-			if (array.size() > 1) {
-				FLOW.info("{} is AuId", id);
-				// Level 0 : AuId
-				rootType = 1;
-				processAuId(array);
-			} else if (array.size() == 1) {
-				// Level 0 : Id
-				rootType = 0;
-				FLOW.info("{} is PaperId", id);
-				processPaper((Map) array.get(0));
-			}
-		}
-	}
-
 	public void parseAuIdWithAA(List arr) {
 		for (int i = 0; i < arr.size(); i++) {
 			Map obj = (Map) arr.get(i);
@@ -467,5 +479,23 @@ public class Processor extends Thread {
 		long end = System.currentTimeMillis();
 		String msg = String.format("[%s] Use time: %d (ms)", ttl, end - begin);
 		log.info(msg);
+	}
+	@Before
+	public void before() {
+		init();
+	}
+
+	@After
+	public void after() {
+		log.debug("=== Level 1 =====");
+		log.debug("idList.size:" + idList1.size());
+		log.debug("otherData1.size:" + otherData1.size());
+
+		log.debug("=== Level 2 =====");
+		log.debug("otherData2.size:" + otherData2.size());
+
+		log.debug("=== other =====");
+		seeHowManyRid();
+		log.debug("ridMap.size:" + ridMap.size());
 	}
 }

@@ -18,11 +18,11 @@ public class QueryThread extends Thread {
 	protected String offset;
 	protected Map result;
 	
-	public QueryThread(String cond, String attr, String count, String offset) {
+	public QueryThread(String cond, String attr, String count, String i) {
 		this.cond = cond;
 		this.attr = attr;
 		this.count = count;
-		this.offset = offset;
+		this.offset = i;
 	}
 	
 	@Override

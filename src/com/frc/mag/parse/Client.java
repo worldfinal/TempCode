@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +87,8 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		int idx = 0;
 		p1.id = data[idx][0];
 		p2.id = data[idx][1];
+		p1.isStartPoint = 0;
+		p2.isStartPoint = 1;
 		// p1.test();
 		// p2.test();
 		try {
@@ -125,7 +129,7 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		log.info("======handleHop1=========");
 		// Id->Id
 		if (p1.rootType == 0 && p2.rootType == 0) {
-			List<BigDataNode> list = p1.idList;
+			List<BigDataNode> list = p1.idList1;
 			log.info("====Id->Id");
 			for (BigDataNode node : list) {
 				if (node.val == p2.id) {
@@ -198,9 +202,9 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		if (p1.rootType == 0 && p2.rootType == 0) {
 			i = j = 0;
 			log.info("====Id->Id->Id");
-			while (i < p1.idList.size() && j < p2.idList.size()) {
-				BigDataNode n1 = p1.idList.get(i);
-				BigDataNode n2 = p2.idList.get(j);
+			while (i < p1.idList1.size() && j < p2.idList1.size()) {
+				BigDataNode n1 = p1.idList1.get(i);
+				BigDataNode n2 = p2.idList1.get(j);
 				if (n1.val == n2.val) {
 					List<Long> arr = new ArrayList<Long>();
 					arr.add(p1.id);
@@ -285,29 +289,37 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		int i, j;
 		// Id-Id
 		log.info("======== ?-Id-Id-?");
-		for (Entry<Long, List> entry : p1.ridMap.entrySet()) {
-			long key = entry.getKey();
-			List<Long> list = entry.getValue();
-			if (!p2.ridMap.containsKey(key)) {
-				continue;
-			}
-			List<Long> li2 = p2.ridMap.get(key);
-			for (i = 0; i < list.size(); i++) {
-				for (j = 0; j < li2.size(); j++) {
-					if (list.get(i) == li2.get(j)) {
-						log.info("Wrong {} duplicate!", list.get(i));
-						continue;
-					}
-					List<Long> arr = new ArrayList<Long>();
-					arr.add(p1.id);
-					arr.add(list.get(i));
-					arr.add(li2.get(j));
-					arr.add(p2.id);
-					result.add(arr);
-					log.debug(String.format("%d %d %d %d", p1.id, list.get(i), li2.get(j), p2.id));
-				}
+		List<Long> longList2 = new ArrayList<Long>();
+		for (i = 0; i < p2.idList1.size(); i++) {
+			longList2.add(p2.idList1.get(i).val);
+		}
+		Collections.sort(longList2);
+		Collections.sort(p1.idList2, new Comparator<DataNode>(){
+			@Override
+			public int compare(DataNode x, DataNode y) {
+				return x.val > y.val ? 1 : -1;
+			}			
+		});
+		i = j = 0;
+		while (i < p1.idList2.size() && j < longList2.size()) {
+			DataNode node = p1.idList2.get(i);
+			long y = longList2.get(j);
+			if (y == node.val) {
+				List<Long> arr = new ArrayList<Long>();
+				arr.add(p1.id);
+				arr.add(node.from);
+				arr.add(node.val);
+				arr.add(p2.id);
+				result.add(arr);
+				log.debug(String.format("%d %d %d %d", p1.id, node.from, node.val, p2.id));
+				j++;
+			} else if (y > node.val) {
+				j++;
+			} else {
+				i++;
 			}
 		}
+		
 		// Id-other
 		log.info("======== ?-Id-Other-?");
 		i = 0;
@@ -318,13 +330,13 @@ Uri:/mag?id2=2310280492&id1=2332023333
 			if (n1.val == n2.val) {
 				List<Long> arr = new ArrayList<Long>();
 				arr.add(p1.id);
+				arr.add(n1.from);
 				arr.add(n1.val);
-				arr.add(n2.val);
 				arr.add(p2.id);
 				result.add(arr);
 				i++;
 				j++;
-				log.debug(String.format("%d %d %d[%d] %d", p1.id, n1.val, n2.val, n2.type, p2.id));
+				log.debug(String.format("%d %d %d[%d] %d", p1.id, n1.from, n1.val, n2.type, p2.id));
 			} else if (n1.val > n2.val) {
 				i++;
 			} else {
@@ -341,13 +353,13 @@ Uri:/mag?id2=2310280492&id1=2332023333
 			if (n1.val == n2.val) {
 				List<Long> arr = new ArrayList<Long>();
 				arr.add(p1.id);
-				arr.add(n1.val);
 				arr.add(n2.val);
+				arr.add(n2.from);
 				arr.add(p2.id);
 				result.add(arr);
 				i++;
 				j++;
-				log.debug(String.format("%d %d[%d] %d %d", p1.id, n1.val, n1.type, n2.val, p2.id));
+				log.debug(String.format("%d %d[%d] %d %d", p1.id, n2.val, n2.type, n2.from, p2.id));
 			} else if (n1.val > n2.val) {
 				i++;
 			} else {

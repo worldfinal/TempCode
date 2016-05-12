@@ -78,14 +78,16 @@ public class SenderImpl {
 		}
 		
 		Map result = new HashMap();
+		List entities = new ArrayList();
 		for (i = 0; i < threadList.size(); i++) {
 			QueryThread thread = threadList.get(i);
 			Map rs = thread.getResult();
-			if (rs != null) {
-				result.putAll(rs);
+			if (rs.containsKey("entities")) {
+				List es = (List)rs.get("entities");
+				entities.addAll(es);
 			}
 		}
-		
+		result.put("entities", entities);
 		return result;
 	}
 	

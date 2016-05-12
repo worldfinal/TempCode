@@ -43,7 +43,7 @@ public class JavaSample {
 		System.out.println(result);
 	}
 	
-	@Test(dataProvider = "test")
+	@Test(dataProvider = "d2")
 	public void process(String ttl, String expr, String attributes) {
 		QueryThread thread = new QueryThread(expr, attributes, IConstants.MAX_COUNT, "0");
 		thread.start();
@@ -98,7 +98,7 @@ public class JavaSample {
 
 	@DataProvider(name = "d2")
 	public Object[][] createData2() {
-		return new Object[][] { { "evaluate", "Composite(AA.AuId=2171257868)", COMMON_ATTR } };
+		return new Object[][] { { "evaluate", "Composite(AA.AuId=2161289042)", COMMON_ATTR } };
 	}
 
 	@DataProvider(name = "d3")
@@ -108,6 +108,11 @@ public class JavaSample {
 
 	@DataProvider(name = "d4")
 	public Object[][] createData4() {
+		return new Object[][] { { "evaluate", "Or(RId=2258634911,RId=2179118004)", "Id" } };
+	}
+	
+	@DataProvider(name = "rid")
+	public Object[][] createDataRid() {
 		return new Object[][] { { "evaluate", "Or(RId=2258634911,RId=2179118004,RId=2129395888)", COMMON_ATTR } };
 	}
 

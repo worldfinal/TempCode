@@ -1,57 +1,43 @@
 package com.frc.mag.thread;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.frc.mag.bean.BigDataNode;
 import com.frc.mag.bean.DataNode;
 import com.frc.mag.parse.IConstants;
 
-public class ParseIdThread extends Thread {
-	public static final Logger log = LoggerFactory.getLogger("WF");
-	public static final Logger FLOW = LoggerFactory.getLogger("FLOW");
-	public List<DataNode> otherData1; // Level1
-	public Map<String, Boolean> dupMap1;
-	public Map paper = null;
-	public Map result = null;
+public class ParseOther1Thread extends WFThread {
 	
-	public ParseIdThread(Map paper, List<DataNode> otherData1) {
-		this.paper = paper;
-		this.otherData1 = otherData1;
-		dupMap1 = new HashMap<String, Boolean>();
+	public Map<String, Boolean> dupMap1;
+	
+	public ParseOther1Thread(List<DataNode> otherData1, List<DataNode> otherData2, List<BigDataNode> idList1,
+			List<DataNode> idList2, Object obj, long id, int rootType, int isStartPoint) {
+		super(otherData1, otherData2, idList1, idList2, obj, id, rootType, isStartPoint);
 	}
 	
 	@Override
 	public void run() {
-		parsePaperObject(paper);
-		log.info("ParseIdThread:: otherData1.size={}", otherData1.size());
-		
-		List<String> auList = new ArrayList<String>();
-		for (DataNode node : otherData1) {
-			if (node.type == IConstants.SHORT_AUID) {
-				auList.add(String.format("%d", node.val));
+		dupMap1 = new HashMap<String, Boolean>();
+		if (rootType == 0) {
+			FLOW.debug("ParseOther1Thread [Id] start");
+			parsePaperObject((Map)obj);
+			FLOW.debug("ParseOther1Thread [Id] otherData1.size=", otherData1.size());
+			FLOW.debug("ParseOther1Thread [Id] end");
+		} else {
+			FLOW.debug("ParseOther1Thread [AuId] start");
+			List entityList = (List)obj;
+			for (int i = 0; i < entityList.size(); i++) {
+				parseAuObject((Map)entityList.get(i));
 			}
-		}
-		QueryAfIdThread thread = new QueryAfIdThread(auList);
-		thread.start();
-		try {
-			thread.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			FLOW.debug("ParseOther1Thread [AuId] otherData1.size=", otherData1.size());
+			FLOW.debug("ParseOther1Thread [AuId] start");
 		}
 		
-		result = thread.result;
-		log.info("ParseIdThread:: (AfId list)result.size={}", result.size());
 	}
 	
 	protected void parsePaperObject(Map object) {
-		long id = toMyLong(object.get("Id"));
-
 		if (object.containsKey("AA")) {
 			List AA = (List) object.get("AA");
 			if (AA != null) {
@@ -88,6 +74,24 @@ public class ParseIdThread extends Thread {
 			}
 		}
 	}
+	protected void parseAuObject(Map object) {
+		if (object.containsKey("AA")) {
+			List AA = (List) object.get("AA");
+			if (AA != null) {
+				for (int i = 0; i < AA.size(); i++) {
+					Map data = (Map) AA.get(i);
+					long auid = toMyLong(data.get("AuId"));
+					if (auid == id) {
+						if (data.containsKey("AfId")) {
+							long afid = toMyLong(data.get("AfId"));
+							insert(afid, IConstants.SHORT_AFID);
+							break;
+						}
+					}					
+				}
+			}
+		}
+	}
 	private void insert(long val, short type) {
 		DataNode node = new DataNode(val, type);
 		String str = String.format("%d_%d", type, val);
@@ -95,18 +99,5 @@ public class ParseIdThread extends Thread {
 			dupMap1.put(str, true);
 			otherData1.add(node);
 		}
-	}
-	private long toMyLong(Object obj) {
-		if (obj instanceof Long) {
-			return (long) obj;
-		} else if (obj instanceof Integer) {
-			return (long) (int) obj;
-		} else if (obj instanceof String) {
-			return Long.parseLong((String)obj);
-		} else {
-			log.error("Unknow type!" + obj);
-			return 0;
-		}
-		
 	}
 }
