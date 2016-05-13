@@ -251,22 +251,37 @@ Uri:/mag?id2=2310280492&id1=2332023333
 				}
 			}
 		}
-		// Id->AfId->AuId
-		// AfId->AuId->Id
-		if (p1.rootType != p2.rootType) {
+		
+		if (p1.rootType == 1 && p2.rootType == 1) {
+			//AuId-Id-AuId
 			i = j = 0;
-			log.info("====Id->AfId->AuId");
-			log.info("====AfId->AuId->Id");
+			log.info("====AuId-Id-AuId");
+			while (i < p1.idList1.size() && j < p2.idList1.size()) {
+				BigDataNode node1 = p1.idList1.get(i);
+				BigDataNode node2 = p2.idList1.get(j);
+				if (node1.val == node1.val) {
+					List<Long> arr = new ArrayList<Long>();
+					arr.add(p1.id);
+					arr.add(node1.val);
+					arr.add(p2.id);
+					result.add(arr);
+					i++;
+					j++;
+					log.debug(String.format("%d %d %d", p1.id, node1.val, p2.id));
+				} else if (node1.val < node2.val) {
+					j++;
+				} else {
+					i++;
+				}
+			}
+			
+			//AuId-AfId-AuId
+			i = j = 0;
+			log.info("====AuId-AfId-AuId");
 			while (i < p1.otherData1.size() && j < p2.otherData1.size()) {
 				DataNode n1 = p1.otherData1.get(i);
 				DataNode n2 = p2.otherData1.get(j);
-				if (n1.type != IConstants.SHORT_AFID || n2.type != IConstants.SHORT_AFID) {
-					i++;
-					j++;
-					continue;
-				}
-				int k = compareDataNode(n1, n2);
-				if (k == 0) {
+				if (n1.val == n2.val) {
 					List<Long> arr = new ArrayList<Long>();
 					arr.add(p1.id);
 					arr.add(n1.val);
@@ -275,7 +290,7 @@ Uri:/mag?id2=2310280492&id1=2332023333
 					i++;
 					j++;
 					log.debug(String.format("%d %d %d", p1.id, n1.val, p2.id));
-				} else if (k == -1) {
+				} else if (n1.val < n2.val) {
 					j++;
 				} else {
 					i++;
@@ -297,7 +312,11 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		Collections.sort(p1.idList2, new Comparator<DataNode>(){
 			@Override
 			public int compare(DataNode x, DataNode y) {
-				return x.val > y.val ? 1 : -1;
+				if (x.val != y.val) {
+					return x.val > y.val ? 1 : -1;
+				} else {
+					return 0;
+				}
 			}			
 		});
 		i = j = 0;
@@ -337,7 +356,7 @@ Uri:/mag?id2=2310280492&id1=2332023333
 				i++;
 				j++;
 				log.debug(String.format("%d %d %d[%d] %d", p1.id, n1.from, n1.val, n2.type, p2.id));
-			} else if (n1.val > n2.val) {
+			} else if (n1.val < n2.val) {
 				i++;
 			} else {
 				j++;
@@ -360,7 +379,7 @@ Uri:/mag?id2=2310280492&id1=2332023333
 				i++;
 				j++;
 				log.debug(String.format("%d %d[%d] %d %d", p1.id, n2.val, n2.type, n2.from, p2.id));
-			} else if (n1.val > n2.val) {
+			} else if (n1.val < n2.val) {
 				i++;
 			} else {
 				j++;

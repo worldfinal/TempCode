@@ -68,7 +68,7 @@ public class Processor extends Thread {
 
 	public static String PATH = IConstants.TESTPATH;
 	public static long MOD = 100000000;
-	public static String COMMON_ATTR = "Ti,Y,CC,Id,AA.AuId,AA.AfId,J.JId,C.CId,F.FId,RId";
+//	public static String COMMON_ATTR = "CC,Id,AA.AuId,AA.AfId,J.JId,C.CId,F.FId,RId";
 
 	// For testing only
 	public static long ttl_query_use_time;
@@ -163,6 +163,7 @@ public class Processor extends Thread {
 
 	
 
+	@SuppressWarnings("unchecked")
 	public void seeHowManyRid() {
 		List<Long> ridList = new ArrayList<Long>();
 		for (int i = 0; i < idList1.size(); i++) {
@@ -198,8 +199,10 @@ public class Processor extends Thread {
 					return arg0.val > arg1.val ? 1 : -1;
 				} else if (arg0.type != arg1.type) {
 					return arg0.type > arg1.type ? 1 : -1;
-				} else {
+				} else if (arg0.from != arg1.from) {
 					return arg0.from > arg1.from ? 1 : -1;
+				} else {
+					return 0;
 				}
 			}
 		};
@@ -209,7 +212,11 @@ public class Processor extends Thread {
 		Comparator c2 = new Comparator<BigDataNode>() {
 			@Override
 			public int compare(BigDataNode x, BigDataNode y) {
-				return x.val > y.val ? 1 : -1;
+				if (x.val != y.val) {
+					return x.val > y.val ? 1 : -1;
+				} else {
+					return 0;
+				}
 			}
 
 		};
@@ -218,9 +225,11 @@ public class Processor extends Thread {
 	@Override
 	public void run() {
 		String expr = String.format("Or(Id=%d,Composite(AA.AuId=%d))", id, id);
-		Map obj = BaseSender.queryData(expr, COMMON_ATTR, IConstants.MAX_COUNT, "0");
+		Map obj = BaseSender.queryData(expr, IConstants.COMMON_ATTR, IConstants.MAX_COUNT, "0");
 //		Map obj = queryData(expr, COMMON_ATTR, IConstants.MAX_COUNT);
 		parseJsonObject(obj);
+		
+		after();
 	}
 
 	public void processAuId(List array) {

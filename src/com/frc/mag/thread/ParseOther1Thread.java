@@ -23,7 +23,7 @@ public class ParseOther1Thread extends WFThread {
 		if (rootType == 0) {
 			FLOW.debug("ParseOther1Thread [Id] start");
 			parsePaperObject((Map)obj);
-			FLOW.debug("ParseOther1Thread [Id] otherData1.size=", otherData1.size());
+			FLOW.debug("ParseOther1Thread [Id] otherData1.size={}", otherData1.size());
 			FLOW.debug("ParseOther1Thread [Id] end");
 		} else {
 			FLOW.debug("ParseOther1Thread [AuId] start");
@@ -31,8 +31,8 @@ public class ParseOther1Thread extends WFThread {
 			for (int i = 0; i < entityList.size(); i++) {
 				parseAuObject((Map)entityList.get(i));
 			}
-			FLOW.debug("ParseOther1Thread [AuId] otherData1.size=", otherData1.size());
-			FLOW.debug("ParseOther1Thread [AuId] start");
+			FLOW.debug("ParseOther1Thread [AuId] otherData1.size={}", otherData1.size());
+			FLOW.debug("ParseOther1Thread [AuId] end");
 		}
 		
 	}

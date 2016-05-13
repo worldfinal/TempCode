@@ -26,7 +26,9 @@ public class BaseSender {
 	public static String COMMON_ATTR = "Ti,CC,Id,AA.AuId,AA.AfId,J.JId,C.CId,F.FId,RId";
 	public static final String keys[] = new String[]{
 			"667a998acb5b4eae8a4e10fcdd1a00ff",
-			"8e95ffbbfb294ed78330169af03ad99c"};
+			"bd00351c15094393878d36b14742faea",
+			"6cc3c947cc464929b4d12575fbc0a234",
+			"10c7ebb073934d7e976cc555485f859c"};
 	
 	public static Map queryData(String expr, String attributes, String count, String offset) {
 		long s = System.currentTimeMillis();
@@ -36,7 +38,8 @@ public class BaseSender {
 		Map result = null;
 		HttpClient httpclient = HttpClients.createDefault();
 		
-		String key = keys[COUNTER % keys.length];
+		int counter = COUNTER++;
+		String key = keys[counter % keys.length];
 		log.info("URL:" + url);
 		log.info("expr:" + expr);
 		log.info("count:" + count);
@@ -66,7 +69,7 @@ public class BaseSender {
 				result = obj;
 
 				if (IConstants.LOG) {
-					String fileName = String.format("%s/%04d_%s_%d.json", PATH, COUNTER++, ttl, l % MOD);
+					String fileName = String.format("%s/%04d_%s_%d.json", PATH, counter, ttl, l % MOD);
 					log.debug("Writing to file: " + fileName);
 					IOUtil.writeStringToFile(fileName, rs);
 				} else {

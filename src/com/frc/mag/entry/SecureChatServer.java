@@ -38,7 +38,7 @@ public class SecureChatServer {
         if (args.length > 0) {
             port = Integer.parseInt(args[0]);
         } else {
-            port = 43013;
+            port = 43201;
         }
         new SecureChatServer(port).run();
     }

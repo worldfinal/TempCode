@@ -14,7 +14,7 @@ public interface IConstants {
 	public static final String MAX_COUNT = String.format("%d", D_MAX_COUNT); // 最大记录数	
 	public static final int RETRY_TIME = 3; // 重试次数
 	
-	public static final String COMMON_ATTR = "Ti,Y,CC,Id,AA.AuId,AA.AfId,J.JId,C.CId,F.FId,RId";
+	public static final String COMMON_ATTR = "CC,Id,AA.AuId,AA.AfId,J.JId,C.CId,F.FId,RId";
 
 	public static final boolean TEST = false;
 	public static final boolean LOG = true;
