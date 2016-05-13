@@ -57,11 +57,14 @@ Uri:/mag?id2=2310280492&id1=2332023333
 		init();
 		p1.id = toMyLong(id1);
 		p2.id = toMyLong(id2);
-		
+		p1.isStartPoint = 0;
+		p2.isStartPoint = 1;
 		FLOW.info("=====================================================\n[Input Data] id1={},id2={}", p1.id, p2.id);
+		
+		p1.start();
+		p2.start();
+		
 		try {
-			p1.start();
-			p2.start();
 			p1.join();
 			p2.join();
 		} catch (InterruptedException e) {
